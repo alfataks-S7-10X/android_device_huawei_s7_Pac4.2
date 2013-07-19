@@ -33,92 +33,173 @@
 	<item>"wlan0"</item>
     </string-array>
 
-
-
      <!-- Array of ConnectivityManager.TYPE_xxxx values allowable for tethering -->
     <!-- Common options are [1, 4] for TYPE_WIFI and TYPE_MOBILE_DUN or
     <!== [0,1,5,7] for TYPE_MOBILE, TYPE_WIFI, TYPE_MOBILE_HIPRI and TYPE_BLUETOOTH -->
     <integer-array translatable="false" name="config_tether_upstream_types">
-
         <item>0</item>
         <item>1</item>
-        <item>4</item>
+        <item>5</item>
         <item>7</item>
-
     </integer-array>
 
-    <bool name="config_automatic_brightness_available">true</bool>
-
     <bool name="config_unplugTurnsOnScreen">false</bool>
-
-    <bool name="config_animateScreenLights">false</bool>
 
     <bool name="config_batterySdCardAccessibility">true</bool>
 
     <integer name="config_criticalBatteryWarningLevel">5</integer>
     <integer name="config_lowBatteryWarningLevel">16</integer>
 
-    <integer-array name="config_autoBrightnessLevels">
-        <item>50</item>
-        <item>100</item>
-        <item>150</item>
-        <item>200</item>
+    <!-- Array of light sensor LUX values to define our levels for auto backlight brightness support.
+         The N entries of this array define N + 1 zones as follows:
 
+         Zone 0:        0 <= LUX < array[0]
+         Zone 1:        array[0] <= LUX < array[1]
+         ...
+         Zone N:        array[N - 1] <= LUX < array[N]
+         Zone N + 1:    array[N] <= LUX < infinity
+
+         Must be overridden in platform specific overlays
+   -->
+   <integer-array name="config_autoBrightnessLevels">
+	<item>25</item>
+	<item>35</item>
+	<item>45</item>
+	<item>55</item>
+	<item>65</item>
+	<item>80</item>
+	<item>95</item>
+	<item>110</item>
+	<item>125</item>
+	<item>150</item>
+	<item>180</item>
+	<item>225</item>  
     </integer-array>
 
+    <!-- Array of output values for LCD backlight corresponding to the LUX values
+         in the config_autoBrightnessLevels array.  This array should have size one greater
+         than the size of the config_autoBrightnessLevels array.
+    -->
     <integer-array name="config_autoBrightnessLcdBacklightValues">
-        <item>35</item>
-        <item>95</item>
-        <item>140</item>
-        <item>180</item>
-        <item>250</item>
+	<item>25</item>    <!-- 0-5 -->
+	<item>35</item>    <!-- 5-10 -->
+	<item>45</item>    <!-- 10-20 -->
+	<item>55</item>    <!-- 15-25 -->
+	<item>65</item>    <!-- 25-35 --> 
+	<item>80</item>    <!-- 35-50 -->
+	<item>95</item>    <!-- 50-70 --> 
+	<item>110</item>    <!-- 70-95 --> 
+	<item>130</item>   <!-- 95-105 -->
+	<item>150</item>   <!-- 105-130 -->
+	<item>175</item>   <!-- 130-180 -->
+	<item>200</item>   <!-- 180-225 -->
+	<item>225</item>   <!-- 225+ -->
     </integer-array>
 
+    <!-- Array of output values for button backlight corresponding to the LUX values
+         in the config_autoBrightnessLevels array.  This array should have size one greater
+         than the size of the config_autoBrightnessLevels array.
+    -->
     <integer-array name="config_autoBrightnessButtonBacklightValues">
-        <item>255</item>
-        <item>255</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
         <item>0</item>
         <item>0</item>
         <item>0</item>
     </integer-array>
 
+    <!-- Array of output values for keyboard backlight corresponding to the LUX values
+         in the config_autoBrightnessLevels array.  This array should have size one greater
+         than the size of the config_autoBrightnessLevels array.
+    -->
     <integer-array name="config_autoBrightnessKeyboardBacklightValues">
         <item>0</item>
         <item>0</item>
         <item>0</item>
         <item>0</item>
         <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
     </integer-array>
 
-    <string name="config_networkLocationProviderPackageName" translatable="false">com.google.android.location</string>
+    <!-- Minimum screen brightness setting allowed by the power manager.
+         The user is forbidden from setting the brightness below this level. -->
+    <integer name="config_screenBrightnessSettingMinimum">25</integer>
 
-    <string name="config_geocodeProviderPackageName" translatable="false">com.google.android.location</string>
-
-    <bool name="config_bluetooth_adapter_quick_switch">false</bool>
+    <!-- Minimum screen brightness allowed by the power manager. -->
+    <integer name="config_screenBrightnessDim">25</integer>
 
     <string name="config_legacyUmsLunFile">/sys/devices/platform/msm_hsusb/gadget/lun0/file</string>
 
-    <integer name="config_screenOnAnimation">250</integer>
-
-    <bool name="config_screenOffAnimation">true</bool>
-
     <integer name="config_deviceHardwareKeys">7</integer>
 
+    <!-- NOTE: Set to true for now so electron beam isn't used. This causes a screen lockup on our QCOM's right now. -->
+    <bool name="config_animateScreenLights">true</bool>
+
+    <!-- True will enable the electron beam screen-off animation. -->
+    <bool name="config_screenOffAnimation">true</bool>
+
+    <!-- There is no charging LED. -->
+    <bool name="config_unplugTurnsOnScreen">true</bool>
+
+    <!-- If true, the screen can be rotated via the accelerometer in all 4
+         rotations as the default behavior. -->
     <bool name="config_allowAllRotations">true</bool>
 
+    <!-- Enable lockscreen rotation by default -->
+    <bool name="config_enableLockScreenRotation">true</bool>
+
+    <!-- Component name of the default wallpaper. This will be ImageWallpaper if not
+         specified
+    <string name="default_wallpaper_component">com.android.phasebeam/.PhaseBeamWallpaper</string>  -->
+
+    <!-- Flag indicating whether we should enable the automatic brightness in Settings.
+         config_hardware_automatic_brightness_available is not set, so we will use software implementation -->
     <bool name="config_automatic_brightness_available">true</bool>
 
     <integer name="config_longPressOnPowerBehavior">1</integer>
     <integer name="config_longPressOnHomeBehavior">2</integer>
 
-<!--    <bool name="config_wifiApFirmwareReload">false</bool> -->
-<!--
-    <bool name="config_sf_limitedAlpha">true</bool>
-    <bool name="config_sf_slowBlur">false</bool>
--->
+    <!-- Boolean indicating whether the start command should be called on the wireless interface when starting the SoftAp -->
     <bool name="config_wifiApStartInterface">true</bool>
 
-    <integer name="config_backKillTimeout">3000</integer>
+    <!-- Boolean indicating whether the wifi chipset has dual frequency band support -->
+    <bool translatable="false" name="config_wifi_dual_band_support">true</bool>
 
+    <!-- Boolean indicating whether the wifi chipset has background scan support -->
+    <bool translatable="false" name="config_wifi_background_scan_support">true</bool>
+
+    <!-- Is the notification LED intrusive? Used to decide if there should be a disable option -->
+    <bool name="config_intrusiveNotificationLed">true</bool>
+
+    <!-- Separate software navigation bar required on this device. -->
+    <bool name="config_showNavigationBar">true</bool>
+
+    <!-- Indicate whether closing the lid causes the device to go to sleep and opening
+         it causes the device to wake up.
+         The default is false. -->
+    <bool name="config_lidControlsSleep">true</bool>
+
+    <!--  Maximum number of supported users -->
+    <integer name="config_multiuserMaximumUsers">1</integer>
+
+    <string-array name="config_locationProviderPackageNames" translatable="false">
+        <item>com.android.location.fused</item>
+        <item>com.google.android.location</item>
+    </string-array>
 
 </resources>

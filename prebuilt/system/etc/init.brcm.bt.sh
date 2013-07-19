@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Copyright (c) 2009-2010, Code Aurora Forum. All rights reserved.
+# Copyright (c) 2009, Code Aurora Forum. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -27,8 +27,10 @@
 #
 
 BLUETOOTH_SLEEP_PATH=/proc/bluetooth/sleep/proto
+BLUETOOTH_STATE_PATH=/sys/class/rfkill/rfkill0/state
 BLUETOOTH_HCD_PATH=/system/etc/bluetooth/BCM4329B1_002.002.023.0313.0390.hcd
-LOG_TAG="bcm-bluetooth"
+
+LOG_TAG="brcm-bluetooth"
 LOG_NAME="${0}:"
 
 hciattach_pid=""
@@ -51,12 +53,15 @@ failed ()
 
 start_hciattach ()
 {
-  echo 1 > $BLUETOOTH_SLEEP_PATH
-#  /system/bin/brcm_patchram_plus -d --enable_hci --enable_lpm --pcm 1 --baudrate 3000000 --patchram $BLUETOOTH_HCD_PATH /dev/ttyHS0 &
-  /system/bin/brcm_patchram_plus -d --enable_hci --enable_lpm  --baudrate 3000000 --patchram $BLUETOOTH_HCD_PATH /dev/ttyHS0 &
-
+#  echo 1 > $BLUETOOTH_STATE_PATH
+#  logi "Power on Bluetooth"
+#  sleep 2
+#  echo 1 > $BLUETOOTH_SLEEP_PATH
+  sleep 1
+#  /system/bin/hciattach -n -s $QSOC_BAUD $QSOC_DEVICE bcm4325 $QSOC_BAUD flow &
+	/system/bin/hciattach -n $QSOC_DEVICE bcm4325 $QSOC_BAUD flow & 
   hciattach_pid=$!
-  loge "start_hciattach: pid = $hciattach_pid"
+  logi "start_hciattach: pid = $hciattach_pid"
 }
 
 kill_hciattach ()
@@ -64,10 +69,36 @@ kill_hciattach ()
   logi "kill_hciattach: pid = $hciattach_pid"
   ## careful not to kill zero or null!
   kill -TERM $hciattach_pid
-  echo 0 > $BLUETOOTH_SLEEP_PATH
+#  echo 0 > $BLUETOOTH_SLEEP_PATH
+#  echo 0 > $BLUETOOTH_STATE_PATH
   # this shell doesn't exit now -- wait returns for normal exit
 }
 
+# mimic hciattach options parsing -- maybe a waste of effort
+USAGE="hciattach [-n] [-p] [-b] [-t timeout] [-s initial_speed] <tty> <type | id> [speed] [flow|noflow] [bdaddr]"
+
+while getopts "blnpt:s:" f
+do
+  case $f in
+  b | l | n | p)  opt_flags="$opt_flags -$f" ;;
+  t)      timeout=$OPTARG;;
+  s)      initial_speed=$OPTARG;;
+  \?)     echo $USAGE; exit 1;;
+  esac
+done
+shift $(($OPTIND-1))
+
+QSOC_DEVICE=${1:-"/dev/ttyHS0"}
+QSOC_BAUD=${3:-"1500000"}
+
+logi "Initiating Bluetooth module with brcm_patchram_plus"
+brcm_patchram_plus --pcm 1 --baudrate $QSOC_BAUD --patchram=$BLUETOOTH_HCD_PATH $QSOC_DEVICE
+exit_code_brcm_patchram_plus=$?
+
+case $exit_code_brcm_patchram_plus in
+  0) logi "Bluetooth Broadcom HCD file download succeeded";;
+  *) failed "Bluetooth Broadcom HCD file download failed" $exit_code_brcm_patchram_plus;;
+esac
 
 # init does SIGTERM on ctl.stop for service
 trap "kill_hciattach" TERM INT

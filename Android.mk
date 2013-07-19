@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+LOCAL_PATH := $(call my-dir)
 
-ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),s7)
-include $(all-subdir-makefiles)
-endif
+include $(call all-subdir-makefiles,$(LOCAL_PATH))

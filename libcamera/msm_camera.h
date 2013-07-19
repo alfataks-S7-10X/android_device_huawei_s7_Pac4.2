@@ -440,11 +440,11 @@ struct msm_snapshot_pp_status {
 #define CAMERA_EFFECT_BLACKBOARD	7
 #define CAMERA_EFFECT_AQUA		8
 #define CAMERA_EFFECT_MAX		9
-/*
+
 enum config3a_wb_t
 {
   CAMERA_WB_MIN_MINUS_1,
-  CAMERA_WB_AUTO = 1,  // This list must match aeecamera.h 
+  CAMERA_WB_AUTO = 1,  /* This list must match aeecamera.h */
   CAMERA_WB_CUSTOM,
   CAMERA_WB_INCANDESCENT,
   CAMERA_WB_FLUORESCENT,
@@ -454,7 +454,7 @@ enum config3a_wb_t
   CAMERA_WB_SHADE,
   CAMERA_WB_MAX_PLUS_1
 } ;
-*/
+
 enum mirror_t
 {
   CAMERA_MIRROR_NORMAL,
@@ -524,12 +524,4 @@ struct msm_camsensor_info {
 	uint8_t flash_enabled;
 	int8_t total_steps;
 };
-
-// camera fatal errors
-enum {
-    CAMERA_ERROR_UKNOWN  = 1,
-    CAMERA_ERROR_RESOURCE = 2,
-};
-
-
 #endif /* __LINUX_MSM_CAMERA_H */
