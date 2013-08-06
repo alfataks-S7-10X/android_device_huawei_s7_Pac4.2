@@ -1,4 +1,5 @@
-## Vold 2.0 Generic fstab
+## Vold 2.0 fstab for IDEOS s7
+#
 ## - San Mehat (san@android.com)
 ## 
 
@@ -12,16 +13,6 @@
 ## <sysfs_path> - List of sysfs paths to source devices
 ######################
 
-## Example of a standard sdcard mount for the emulator / Dream
 # Mounts the first usable partition of the specified device
-#dev_mount sdcard /mnt/sdcard auto /devices/platform/goldfish_mmc.0 /devices/platform/msm_sdcc.2/mmc_host/mmc1
-
-## Example of a dual card setup
-# dev_mount left_sdcard  /sdcard1  auto /devices/platform/goldfish_mmc.0 /devices/platform/msm_sdcc.2/mmc_host/mmc1
-# dev_mount right_sdcard /sdcard2  auto /devices/platform/goldfish_mmc.1 /devices/platform/msm_sdcc.3/mmc_host/mmc1
-
-## Example of specifying a specific partition for mounts
-# dev_mount sdcard /sdcard 2 /devices/platform/goldfish_mmc.0 /devices/platform/msm_sdcc.2/mmc_host/mmc1
-
-dev_mount sdcard /mnt/sdcard auto /devices/platform/msm_sdcc.1/mmc_host/mmc0
-dev_mount usb /mnt/usb auto /devices/platform/msm_hsusb_host.0/usb1
+dev_mount sdcard0 /storage/sdcard0 auto /devices/platform/msm_sdcc.1/mmc_host/mmc0
+dev_mount usbdisk0 /storage/usbdisk0 auto /devices/platform/msm_hsusb_host.0/usb1/

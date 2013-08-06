@@ -12,7 +12,7 @@ $(call inherit-product, vendor/cm/config/gsm.mk)
 $(call inherit-product, device/huawei/s7/device_s7.mk)
 
 ## Device identifier. This must come after all inclusions
-PRODUCT_NAME := cm_s7
+PRODUCT_NAME := s7
 PRODUCT_DEVICE := s7
 PRODUCT_BRAND := HUAWEI
 PRODUCT_MODEL := IDEOS S7-10X

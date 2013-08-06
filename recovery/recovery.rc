@@ -9,13 +9,12 @@ on init
     export LD_LIBRARY_PATH /system/lib:/sbin
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
-    export EXTERNAL_STORAGE /sdcard1
+    export EXTERNAL_STORAGE /sdcard0
 
     symlink /system/etc /etc
 
     mkdir /boot
-    mkdir /sdcard
-    mkdir /sdcard1
+    mkdir /sdcard0
     mkdir /sd-ext
     mkdir /datadata
     mkdir /emmc

@@ -1,67 +1,38 @@
 import init.s7.usb.rc
 
 on early-init
-        export EXTERNAL_STORAGE /mnt/sdcard
-        mkdir /mnt/sdcard 0777 system system
-	mkdir /mnt/usb 0777 system system
+    export EXTERNAL_STORAGE /storage/sdcard0
+    mkdir /storage 0050 system sdcard_r
+    mkdir /storage/sdcard0 0000 system system
+    mkdir /storage/usbdisk0 0775 system system
 
-        # for backwards compatibility
-        symlink /mnt/sdcard /sdcard
-        symlink /mnt/usb /usb
-
-service dhcp-service /system/bin/netcfg wlan0 dhcp
-    class main
-        oneshot
-
-on property:dev.bootcomplete=1
-        stop dhcp-service
-        start dhcp-service
+    symlink /storage/sdcard0 /sdcard
+    symlink /storage/sdcard0 /mnt/sdcard
+    symlink /storage/usbdisk0 /usbdisk0
+    symlink /storage/usbdisk0 /mnt/usbdisk0
 
 on init
-#    mkdir /data2 0771 system system
     chmod 0777 /sys/class/graphics/fb0/state
     write /sys/class/graphics/fb0/state 1
-
 
 on fs
     devwait /dev/block/mmcblk1p2
     exec /system/bin/e2fsck -p /dev/block/mmcblk1p2
     mount ext4 /dev/block/mmcblk1p2 /data nosuid nodev noatime nodiratime barrier=0 noauto_da_alloc data=writeback nobh
 
+on post-fs-data
+    # we will remap this as /storage/sdcard0 with the sdcard fuse tool
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+    # double check the perms and set owner
+    chown root root /devlog
+    chmod 0700 /devlog
+
 on boot
     mount debugfs /sys/kernel/debug /sys/kernel/debug
 
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 998400
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor smartass
-
-#    chmod 0777 /sys/class/graphics/fb0/state
-#    write /sys/class/graphics/fb0/state 1
-
-    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
-    chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power
-    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
-    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
-    chown bluetooth bluetooth /proc/bluetooth/sleep/proto
-    chown system system /sys/module/sco/parameters/disable_esco
-    chmod 0660 /sys/module/bluetooth_power/parameters/power
-    chmod 0660 /sys/class/rfkill/rfkill0/state
-    chmod 0660 /proc/bluetooth/sleep/proto
-    chown bluetooth bluetooth /dev/ttyHS0
-    chmod 0660 /dev/ttyHS0
-    chown bluetooth bluetooth /sys/devices/platform/msm_serial_hs.0/clock
-    chmod 0660 /sys/devices/platform/msm_serial_hs.0/clock
-
-
-    write /proc/sys/kernel/panic 1
-
-
-#adbd
-   chown system system /sys/module/g_android/parameters/product_id
-   write /sys/module/g_android/parameters/product_id 3610
-
-# governor
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactiveX
-
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor smartassV2
 
 #create  WIFI filesystem structure
     mkdir /data/misc 01771 system misc
@@ -71,6 +42,7 @@ on boot
     chmod 770 /data/misc/wifi/sockets
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
+
     mkdir /data/system 0775 system system
 
     mkdir /data/local
@@ -85,26 +57,30 @@ on boot
     chown radio radio 0770 /data/radio
     chmod 0777 /data/radio/qmux_connect_socket
 
-
 # Create directories for wiper services
     mkdir /data/wpstiles/ 0777 shell
     mkdir /etc/wiper 0777 location qcom_oncrpc
 
+    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
+    chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power  
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /proc/bluetooth/sleep/proto
+    chown system system /sys/module/sco/parameters/disable_esco
+    chown bluetooth bluetooth /sys/module/hci_smd/parameters/hcismd_set
+    chmod 0660 /sys/module/bluetooth_power/parameters/power
+    chmod 0660 /sys/module/hci_smd/parameters/hcismd_set
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chmod 0660 /proc/bluetooth/sleep/proto
+    chown bluetooth bluetooth /dev/ttyHS0
+    chmod 0660 /dev/ttyHS0
+    chown bluetooth bluetooth /sys/devices/platform/msm_serial_hs.0/clock
+    chmod 0660 /sys/devices/platform/msm_serial_hs.0/clock
 
-# accelerometer
-    chmod 0666 /dev/accel
-#    chown bluetooth bluetooth /dev/rfkill
+    write /proc/sys/kernel/panic 1
 
-#gpio_debug
-    chmod 0666 /dev/gpio
-
-# touchscreen
-    chmod 0666 /dev/input/event1
-    chmod 0777 /dev/autolight
-    chmod 0666 /dev/akm8973_aot
-    chmod 0666 /dev/akm8973_dev
-    chmod 0777 /dev/sensors
-
+# governor
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactiveX
 
 # SD card polling
     chown system system /sys/module/g_android/parameters/product_id
@@ -119,6 +95,45 @@ on boot
     write /sys/devices/platform/msm_hsusb/gadget/lun0/file /dev/block/mmcblk1p1
     write /sys/bus/platform/drivers/msm_sdcc/msm_sdcc.1/polling 1
 
+#adbd
+    chown system system /sys/module/g_android/parameters/product_id
+    write /sys/module/g_android/parameters/product_id 3610
+
+# Enable Bluetooth 802.11 PAL when Bluetooth is turned on
+    setprop ro.config.bt.amp no
+
+# touchscreen
+    chmod 0666 /dev/input/event1
+    chmod 0777 /dev/autolight
+    chmod 0666 /dev/akm8973_aot
+    chmod 0666 /dev/akm8973_dev
+    chmod 0777 /dev/sensors
+
+# accelerometer
+    chmod 0666 /dev/accel
+    chown bluetooth bluetooth /dev/rfkill
+
+#gpio_debug
+    chmod 0666 /dev/gpio
+
+#To allow interfaces to get v6 address when tethering is enabled
+    write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet3/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet4/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet5/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet6/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet7/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio3/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio4/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio5/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio6/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio7/accept_ra 2
+
 service qmuxd /system/bin/qmuxd
     class main
     user root
@@ -128,13 +143,21 @@ on property:init.svc.ril-daemon=running
 
 on property:init.svc.bluetoothd=running
     write /sys/devices/virtual/bluetooth/hci0/idle_timeout 7000
-#    start btwlancoex
+    start btwlancoex
 
-#on property:init.svc.bluetoothd=stopped
-#    stop btwlancoex
+on property:init.svc.bluetoothd=stopped
+    stop btwlancoex
 
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd_wlan0
+
+service dhcp-service /system/bin/netcfg wlan0 dhcp
+    class main
+    oneshot
+
+on property:dev.bootcomplete=1
+        stop dhcp-service
+        start dhcp-service
 
 # WPA SETTINGS
 service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant  -Dwext -iwlan0 -W -c/data/misc/wifi/wpa_supplicant.conf
@@ -144,129 +167,148 @@ service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant  -Dwext
     disabled
     oneshot
 
-service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+service dhcpcd_wlan0 /system/bin/dhcpcd -BKL
     class main
     disabled
     oneshot
 
 service iprenew_wlan0 /system/bin/dhcpcd -n
-    class main
-    disabled
-    oneshot
-
-service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
-    class main
-    disabled
-    oneshot
-
-service iprenew_bnep0 /system/bin/dhcpcd -n
-    class main
-    disabled
-    oneshot
+        class main
+        disabled
+        oneshot
 
 service start_usb0 /system/bin/logwrapper /system/bin/sh /etc/start_usb0.sh
     class main
     disabled
     oneshot
 
-service akmd /system/bin/akmd2
-    class main
+service brcmpatch /system/bin/log -t brcm-bluetooth -p i "brcm_patchram_plus service requested"
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
     oneshot
 
-# begin: comment out by h00131430 for BCM432x
-#service hci_qcomm_init /system/bin/log -t qcom-bluetooth -p i "hci_qcomm_init service requested"
-#    user bluetooth
-#    group bluetooth net_bt_admin
-#    disabled
-#    oneshot
-# end: comment out by h00131430 for BCM432x
-
-#service brcmpatch /system/bin/log -t brcm-bluetooth -p i "brcm_patchram_plus service requested"
-#    user bluetooth
-#    group bluetooth net_bt_admin
-#    disabled
-#    oneshot
-
-#service rmt_storage /system/bin/rmt_storage /dev/block/mmcblk0p10 /dev/block/mmcblk0p1
-#    user root
-#    disabled
-
-service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
+service hciattach /system/bin/sh /system/etc/init.brcm.bt.sh
+    class late_start
     user bluetooth
     group qcom_oncrpc bluetooth net_bt_admin
     disabled
     oneshot
 
+service hfag /system/bin/sdptool add --channel=10 HFAG
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
 
-#service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
-#    user system
-#    group system inet
+service hsag /system/bin/sdptool add --channel=11 HSAG
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
 
+service opush /system/bin/sdptool add --channel=12 OPUSH
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
 
-#service btwlancoex /system/bin/sh /system/etc/init.qcom.coex.sh
-#    user root
-#    group qcom_oncrpc bluetooth net_bt_admin
-#    disabled
-#    oneshot
+service pbap /system/bin/sdptool add --channel=19 PBAP
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
 
-#service wiperiface /system/bin/wiperiface
-#    user location
-#    group qcom_oncrpc
-#    oneshot
+service bt-dun /system/bin/dun-server /dev/smd7 /dev/rfcomm0
+    class late_start
+    disabled
+    oneshot
 
-#service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
-#    user system
-#    group system
-#    disabled
-#    oneshot
+service bt-sap /system/bin/sapd 15
+    class late_start
+    disabled
+    oneshot
 
-#service qcom-sh /system/bin/sh /init.qcom.sh
-#    user root
-#    oneshot
+service sapd /system/bin/sdptool add --channel=15 SAP
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service dund /system/bin/sdptool add --channel=1 DUN
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service bridgemgrd /system/bin/bridgemgrd
+    class late_start
+    user radio
+    group radio
+    disabled
+
+service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
+    class late_start
+    user system
+    group system inet
+    disabled
+
+service ftp /system/bin/sdptool add --psm=5257 --channel=20 FTP
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service map0 /system/bin/sdptool add --channel=16 MAS0
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service map1 /system/bin/sdptool add --channel=17 MAS1
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service btwlancoex /system/bin/sh /system/etc/init.qcom.coex.sh
+    user root
+    group qcom_oncrpc bluetooth net_bt_admin
+    disabled
+    oneshot
+
+on property:bluetooth.isEnabled=true
+    start btwlancoex
+    start amp_load
+    write /sys/class/bluetooth/hci0/idle_timeout 7000
+
+on property:bluetooth.isEnabled=false
+    start amp_unload
+
+service akmd /system/bin/akmd2
+    class main
+    oneshot
+
+service bt_init_off /system/bin/sh /system/etc/bluetooth_power.sh
+    class main
+    oneshot
 
 #service qcom-post-boot /system/bin/sh /system/etc/init.qcom.post_boot.sh
-#    user root
-#    disabled
-#    oneshot
-
-#service data2emmc /system/bin/data2emmc  /dev/block/mmcblk0p2
-#	user root
-#	group root
-#	disabled
-#	oneshot
-
-#service genparti /system/bin/genparti /dev/block/mmcblk0
-#    user root
-#    group root
-#    disabled
-#    oneshot
-
-#service qcom-wifi /system/bin/sh /system/etc/init.qcom.wifi.sh
+#    class late_start
 #    user root
 #    disabled
 #    oneshot
 
 #on property:init.svc.bootanim=stopped
 #    start qcom-post-boot
-#    start qcom-wifi
 
-#service ckpd /system/bin/CKPD-daemon
-#    user system
-#    group system radio
-#    disabled
-#    onrestart /system/bin/log -t RIL-CKPD -p w "CKPD daemon restarted"
-
-#on property:ro.service.ckpd.enable=1
-#    start ckpd
-#service hdmid /system/bin/hdmid
-#    socket hdmid stream 0660 root system graphics
-#    disabled
-
-#on property:ro.hdmi.enable=true
-#    start hdmid
-
-#service hostapd /system/bin/hostapd -dddd /system/lib/modules/hostapd.conf
-#    user root
-#    group root
-#    oneshot
-#    disabled
+# create virtual SD card at /storage/sdcard0, based on the /data/media directory
+# daemon will drop to user/group system/media_rw after initializing
+# underlying files in /data/media will be created with user and group media_rw (1023)
+service sdcard /system/bin/sdcard /data/media /mnt/shell/emulated 1023 1023
+    class late_start

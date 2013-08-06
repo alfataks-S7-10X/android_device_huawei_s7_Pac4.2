@@ -1,7 +1,6 @@
 TARGET_SPECIFIC_HEADER_PATH := device/huawei/s7/include
 
 USE_CAMERA_STUB := true
-COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_OMX
 
 # Bootanimation
 TARGET_BOOTANIMATION_PRELOAD := true
@@ -18,11 +17,9 @@ TARGET_CPU_ABI2 := armeabi
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_SMP := true
 ARCH_ARM_HAVE_TLS_REGISTER := true
-ARCH_ARM_HAVE_VFP := true
 ARCH_ARM_HAVE_NEON := true
 ARCH_ARM_HAVE_ARMV7A := true
 TARGET_ARCH_VARIANT_CPU := cortex-a8
-TARGET_ARCH_VARIANT_FPU := neon
 TARGET_GRALLOC_USES_ASHMEM := true
 
 # Flags
@@ -52,23 +49,24 @@ COMMON_GLOBAL_CFLAGS += -DQCOM_HARDWARE
 COMMON_GLOBAL_CFLAGS += -DREFRESH_RATE=60 -DQCOM_NO_SECURE_PLAYBACK
 
 # Graphics
-BOARD_EGL_CFG := device/huawei/s7/prebuilt/system/lib/egl/egl.cfg
-TARGET_USES_GENLOCK := true
 USE_OPENGL_RENDERER := true
+BOARD_EGL_CFG := device/huawei/s7/prebuilt/system/lib/egl/egl.cfg
 BOARD_ADRENO_DECIDE_TEXTURE_TARGET := true
-TARGET_FORCE_CPU_UPLOAD := true
+TARGET_USES_GENLOCK := true
 TARGET_NO_HW_VSYNC := true
-TARGET_NO_HW_OVERLAY := true
+TARGET_USES_OVERLAY := true
 TARGET_USES_ION := false
+#TARGET_DISABLE_TRIPLE_BUFFERING := true
+#BOARD_EGL_NEEDS_LEGACY_FB := true
+#COMMON_GLOBAL_CFLAGS += -DTARGET_8x50
 
 # Camera
-#BOARD_USES_LEGACY_CAMERA := true
-BOARD_USES_LEGACY_OVERLAY := true
 BOARD_NEEDS_MEMORYHEAPPMEM := true
 TARGET_DISABLE_ARM_PIE := true
-#BOARD_USES_QCOM_LEGACY_CAM_PARAMS := true
-COMMON_GLOBAL_CFLAGS += -DBINDER_COMPAT
+BOARD_CAMERA_USE_MM_HEAP := true
+BOARD_USES_QCOM_LEGACY_CAM_PARAMS := true
 COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB
+COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_OMX
 
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
@@ -85,7 +83,6 @@ WIFI_DRIVER_FW_PATH_STA     := "/system/etc/wifi/rtecdc-bcm4319.bin"
 WIFI_DRIVER_FW_PATH_AP      := "/system/etc/wifi/rtecdc-apsta-bcm4319.bin"
 WIFI_DRIVER_MODULE_ARG      := "firmware_path=/system/etc/wifi/rtecdc-bcm4319.bin nvram_path=/system/etc/wifi/nvram-bcm4319.txt firmware_softap_path=/system/etc/wifi/rtecdc-apsta-bcm4319.bin"
 WIFI_DRIVER_MODULE_NAME     := "dhd"
-BOARD_HAVE_HUAWEI_WIFI := true
 
 # GPS
 BOARD_GPS_LIBRARIES = libloc
@@ -93,15 +90,12 @@ BOARD_USES_GPSSHIM := true
 BOARD_GPS_NEEDS_XTRA := true 
 
 # Webkit
-WITH_JIT := true
-ENABLE_JSC_JIT := true
-JS_ENGINE := v8
-HTTP := chrome
 ENABLE_WEBGL := true
-TARGET_WEBKIT_USE_MORE_MEMORY := true
+TARGET_FORCE_CPU_UPLOAD := true
 
 # external storage
 BOARD_SDCARD_DEVICE_PRIMARY := /dev/block/mmcblk1p1
+BOARD_SDCARD_DEVICE_SECONDARY := /dev/block/mmcblk1
 BOARD_SDEXT_DEVICE := /dev/block/mmcblk1p2
 
 # Filesystem
